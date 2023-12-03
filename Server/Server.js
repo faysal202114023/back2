@@ -29,11 +29,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const JWT_SECRET = "jwt-secret-key";
 const app = express();
-app.use(cors({  // Use cors middleware
-  origin: ["http://localhost:5173"],
-  methods: ["GET", "POST", "DELETE"],
-  credentials: true,
-}));
+
 app.use(cookieParser());
 
 app.use(bodyParser.json());
