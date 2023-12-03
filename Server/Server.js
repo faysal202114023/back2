@@ -53,7 +53,7 @@ const checkDatabaseConnection = (req, res, next) => {
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://bangladeshrailway-762b4.web.app/",
     methods: ["GET", "POST", "DELETE"], // Add DELETE to the allowed methods
     credentials: true,
   })
