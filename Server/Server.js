@@ -646,3 +646,64 @@ app.delete("/delete-train/:trainId", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+app.post('/calculate-amount', async (req, res) => {
+  const { ticketId } = req.body;
+
+  try {
+    const ticket = await Ticket.findById(ticketId)
+      .populate('trainRouteId')
+      .exec();
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const trainRoute = ticket.trainRouteId;
+
+    // Customize the logic based on how you want to calculate the total price
+    const totalPrice = trainRoute.routes.reduce((total, route) => {
+      return total + route.ticketPrice;
+    }, 0);
+
+    res.json({ totalPrice });
+  } catch (error) {
+    console.error('Error calculating amount:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+app.get('/get-payment-count', async (req, res) => {
+  try {
+    const count = await Payment.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    console.error('Error fetching payment count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+app.get('/get-train-route-count', async (req, res) => {
+  try {
+    const count = await TrainRoute.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    console.error('Error fetching train route count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+app.get('/get-user-count', async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    console.error('Error fetching user count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+app.get('/get-emergency-count', async (req, res) => {
+  try {
+    const count = await Emergency.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    console.error('Error fetching emergency count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
