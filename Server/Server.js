@@ -647,26 +647,46 @@ app.delete("/delete-train/:trainId", async (req, res) => {
   }
 });
 app.post('/calculate-amount', async (req, res) => {
-  const { ticketId } = req.body;
+  const { ticketId, from, to } = req.body;
 
   try {
+    // Find the ticket with the given ticketId and populate the associated trainRouteId
     const ticket = await Ticket.findById(ticketId)
-      .populate('trainRouteId')
+      .populate({
+        path: 'trainRouteId',
+        populate: { path: 'routes' }, // Populate the routes within trainRouteId
+      })
       .exec();
 
+    // Check if the ticket exists
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket not found' });
     }
 
+    // Access the trainRouteId from the populated ticket
     const trainRoute = ticket.trainRouteId;
 
-    // Customize the logic based on how you want to calculate the total price
-    const totalPrice = trainRoute.routes.reduce((total, route) => {
+    // Find the indices of the selected 'from' and 'to' stations in the routes array
+    const fromIndex = trainRoute.routes.findIndex((station) => station.stationName === from);
+    const toIndex = trainRoute.routes.findIndex((station) => station.stationName === to);
+
+    // Check if the stations are found in the route
+    if (fromIndex === -1 || toIndex === -1 || fromIndex >= toIndex) {
+      return res.status(400).json({ error: 'Invalid station selection' });
+    }
+
+    // Extract the relevant route for the selected stations
+    const selectedRoute = trainRoute.routes.slice(fromIndex, toIndex + 1);
+
+    // Calculate the total ticket price for the selected route
+    const totalPrice = selectedRoute.reduce((total, route) => {
       return total + route.ticketPrice;
     }, 0);
 
+    // Respond with the calculated total price
     res.json({ totalPrice });
   } catch (error) {
+    // Handle any errors that may occur during the process
     console.error('Error calculating amount:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
